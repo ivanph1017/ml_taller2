@@ -1,11 +1,11 @@
 # load libs
 require(neuralnet)
 require(nnet)
-require(ggplot2)
+# require(ggplot2)
 
 
 # Set seed for reproducibility purposes
-set.seed(500)
+set.seed(10)
 
 normalize <- function(x){
   return ((x-min(x))/(max(x)-min(x)))
@@ -41,25 +41,31 @@ outs <- NULL
 proportion <- 0.95 # Set to 0.995 for LOOCV
 
 # Crossvalidate, go!
-for(i in 1:k) {
-  index <- sample(1:nrow(train), round(proportion*nrow(train)))
-  train_cv <- train[index, ]
-  test_cv <- train[-index, ]
-  nn_cv <- neuralnet(f,
-                     data = train_cv,
-                     hidden = c(8, 12, 10),
-                     act.fct = "logistic",
-                     linear.output = FALSE)
-  
-  # Compute predictions
-  pr.nn <- compute(nn_cv, test_cv[, 1:8])
-  # Extract results
-  pr.nn_ <- pr.nn$net.result
-  # Accuracy (test set)
-  original_values <- max.col(test_cv[, 9:18])
-  pr.nn_2 <- max.col(pr.nn_)
-  outs[i] <- mean(pr.nn_2 == original_values)
+for(i in 1:k){
+  print(paste("Iteración ", i))
+  tryCatch({
+    index <- sample(1:nrow(train), round(proportion*nrow(train)))
+    train_cv <- train[index, ]
+    test_cv <- train[-index, ]
+    nn_cv <- neuralnet(f,
+                       data = train_cv,
+                       hidden = c(8, 4, 10),
+                       act.fct = "logistic",
+                       threshold = 0.1,
+                       stepmax = 1e+07,
+                       linear.output = FALSE)
+    print("Red neuronal")
+    # Compute predictions
+    pr.nn <- compute(nn_cv, test_cv[, 1:8])
+    print("Clasificación realizada")
+    # Extract results
+    pr.nn_ <- pr.nn$net.result
+    # Accuracy (test set)
+    original_values <- max.col(test_cv[, 9:18])
+    pr.nn_2 <- max.col(pr.nn_)
+    outs[i] <- mean(pr.nn_2 == original_values)
+    print(paste("Resultado ", outs[i]))
+  })
 }
 
 mean(outs)
-
