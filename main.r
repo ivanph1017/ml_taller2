@@ -11,7 +11,7 @@ normalize <- function(x){
   return ((x-min(x))/(max(x)-min(x)))
 }
 
-dataset <- read.csv("yeast_nn.csv")
+dataset <- read.csv("yeast.csv")
 dim(dataset)
 names(dataset)
 str(dataset)
@@ -49,10 +49,13 @@ for(i in 1:k){
     test_cv <- train[-index, ]
     nn_cv <- neuralnet(f,
                        data = train_cv,
-                       hidden = c(8, 4, 10),
+                       hidden = 2,
                        act.fct = "logistic",
-                       threshold = 0.1,
-                       stepmax = 1e+07,
+                       threshold = 0.001,
+                       algorithm = "rprop+",
+                       learningrate.factor = list(minus = 0.5, plus = 1.2),
+                       stepmax = 1e+06,
+                       lifesign = "full",
                        linear.output = FALSE)
     print("Red neuronal")
     # Compute predictions
